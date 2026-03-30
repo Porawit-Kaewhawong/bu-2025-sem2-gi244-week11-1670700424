@@ -1,65 +1,92 @@
 using System.Collections;
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+
+[System.Serializable]
+public class Wave
+{
+    public int totalSpawnEnemies;
+    public int numberOfRandomSpawnPoint;
+    public float delayStart;
+    public float spawnInterval;
+    public int numberOfPowerUp;
+}
 
 public class SpawnManager : MonoBehaviour
 {
+    public List<Wave> waves;
+
     public Transform[] spawnPoints;
+
+    public Transform powerUpSpawnArea;
+    public GameObject[] powerUps;
     public GameObject enemyPrefab;
 
-    private Coroutine byeRoutine;
     void Start()
     {
-        // InvokeRepeating(nameof(RandomSpawn), 0, 3);
-        // byeRoutine = StartCoroutine(Bye());
+        Vector2 offSet2D = Random.insideUnitCircle * powerUpSpawnArea.localScale;
+        Debug.Log(offSet2D);
+
         StartCoroutine(SpawnRoutine());
     }
 
     void Update()
     {
-        if (Time.time > 1)
-        {
-            // StopCoroutine(byeRoutine);
-        }
+
     }
 
     IEnumerator SpawnRoutine()
     {
         while (true)
         {
-            RandomSpawn();
-            yield return new WaitForSeconds(3f);
+            
         }
     }
 
-    void RandomSpawn()
+    void RandomSpawn(int index)
     {
-        var index = Random.Range(0, spawnPoints.Length);
         var spawnPoint = spawnPoints[index];
         Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
     }
-
-    IEnumerator Hello(float delay)
+    
+    IEnumerator WaveSpawn(int total, int currentWave)
     {
-        yield return new WaitForSeconds(delay);
+        List<int> selectedPoints = new List<int>();
 
-        Debug.Log("Hello, Frame Count: " + Time.frameCount);
-    }
-
-    IEnumerator Bye()
-    {
-        while (true)
+        // Pre-random select spawn points
+        for (int i = 0; i < waves[currentWave].numberOfRandomSpawnPoint; i++)
         {
-            Debug.Log("Bye, Frame Count: " + Time.frameCount + ", Time: " + Time.time);
-            yield return new WaitForSeconds(1f);
+            int random;
 
-            yield return Hello(2f);
-            yield return new WaitForSeconds(1f);
+            do random = Random.Range(0, spawnPoints.Length);
+            while (selectedPoints.Contains(random));
 
-            if (Time.time > 5)
-            {
-                yield break;
-            }
-
+            selectedPoints.Add(random);
         }
+
+        // Delay start
+        yield return new WaitForSeconds(waves[currentWave].delayStart);
+
+        // Spawn power ups
+        Vector2 offSet2D = Random.insideUnitCircle * powerUpSpawnArea.localScale;
+        Vector3 powerUpSpawnPos = new Vector3();
+
+        for (int i = 0; i < waves[currentWave].numberOfPowerUp; i++)
+        {
+            int random = Random.Range(0, powerUps.Length);
+            Instantiate(powerUps[random], powerUpSpawnPos, Quaternion.identity);
+        }
+
+        // Spawn enemies using selected spawn points
+        for (int i = 0; i < waves[currentWave].totalSpawnEnemies; i++)
+        {
+            int random = Random.Range(0, selectedPoints.Count);
+            Instantiate(enemyPrefab, spawnPoints[random].position, Quaternion.identity);
+
+            yield return new WaitForSeconds(waves[currentWave].spawnInterval);
+        }
+
+
     }
 }
