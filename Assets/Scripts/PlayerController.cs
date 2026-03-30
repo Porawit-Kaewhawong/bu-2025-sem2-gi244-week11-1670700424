@@ -6,7 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public float speed = 5f;
     public Transform focalPoint;
-    public bool hasPowerUp;
+    public bool hasPushPowerUp;
     public GameObject powerUpIndicator;
     private GameObject runTimePowerUp;
 
@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     private InputAction breakAction;
 
     private Coroutine powerUpRoutine;
+    private Coroutine stunRoutine;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -54,8 +56,13 @@ public class PlayerController : MonoBehaviour
     {
         if (other.CompareTag("PowerUp"))
         {
-            hasPowerUp = true;
+            hasPushPowerUp = true;
             Destroy(other.gameObject);
+
+            if (runTimePowerUp != null)
+            {
+                Destroy(runTimePowerUp);
+            }
 
             runTimePowerUp = Instantiate(powerUpIndicator);
             
@@ -70,15 +77,21 @@ public class PlayerController : MonoBehaviour
     IEnumerator PowerUpCooldown()
     {
         yield return new WaitForSeconds(10f);
-        Destroy(runTimePowerUp);
-        hasPowerUp = false;
+
+        if (runTimePowerUp != null)
+        {
+            Destroy(runTimePowerUp);
+        }
+
+        hasPushPowerUp = false;
+        powerUpRoutine = null;
     }
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Enemy"))
         {
-            if (hasPowerUp)
+            if (hasPushPowerUp)
             {
                 var enemyRb = collision.gameObject.GetComponent<Rigidbody>();
                 
@@ -93,5 +106,25 @@ public class PlayerController : MonoBehaviour
                 enemyRb.AddForce(dir * 10, ForceMode.Impulse);
             }
         }
+    }
+
+    public void isStunActive(float duration)
+    {
+        Enemy.IsGlobalStun = true;
+
+        if (stunRoutine != null)
+        {
+            StopCoroutine(stunRoutine);
+        }
+        stunRoutine = StartCoroutine(stunCoolDown(duration));
+    }
+
+    public IEnumerator stunCoolDown(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+
+        Enemy.IsGlobalStun = false;
+        stunRoutine = null;
+        Debug.Log("Enemies are not stunned anymore!");
     }
 }
