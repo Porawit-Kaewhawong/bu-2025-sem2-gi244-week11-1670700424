@@ -15,7 +15,6 @@ public class StunPowerUp : MonoBehaviour
             {
                 player.isStunActive(coolDownTime);
 
-                Debug.Log("All enemies are stun!");
                 Destroy(gameObject);
             }
         }

@@ -125,6 +125,5 @@ public class PlayerController : MonoBehaviour
 
         Enemy.IsGlobalStun = false;
         stunRoutine = null;
-        Debug.Log("Enemies are not stunned anymore!");
     }
 }

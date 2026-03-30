@@ -38,4 +38,12 @@ public class Enemy : MonoBehaviour
             rb.AddForce(dir * speed);
         }
     }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("DestroyArea"))
+        {
+            Destroy(gameObject);
+        }
+    }
 }

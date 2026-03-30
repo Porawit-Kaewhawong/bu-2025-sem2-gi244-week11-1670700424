@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -16,46 +15,36 @@ public class Wave
 public class SpawnManager : MonoBehaviour
 {
     public List<Wave> waves;
-
     public Transform[] spawnPoints;
-
+    public int currentWave = 0;
     public Transform powerUpSpawnArea;
     public GameObject[] powerUps;
     public GameObject enemyPrefab;
 
     void Start()
     {
-        Vector2 offSet2D = Random.insideUnitCircle * powerUpSpawnArea.localScale;
-        Debug.Log(offSet2D);
-
-        StartCoroutine(SpawnRoutine());
+        StartCoroutine(WaveControl());
     }
 
-    void Update()
+    IEnumerator WaveControl()
     {
-
-    }
-
-    IEnumerator SpawnRoutine()
-    {
-        while (true)
+        for (int i = 0; i < waves.Count; i++)
         {
-            
+            currentWave = i + 1;
+            yield return StartCoroutine(WaveSpawn(i));
+
+            Debug.Log($"Wave {currentWave} is complete.");
         }
     }
 
-    void RandomSpawn(int index)
+    IEnumerator WaveSpawn(int waveId)
     {
-        var spawnPoint = spawnPoints[index];
-        Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-    }
-    
-    IEnumerator WaveSpawn(int total, int currentWave)
-    {
+        Wave waveData = waves[waveId];
+
         List<int> selectedPoints = new List<int>();
 
         // Pre-random select spawn points
-        for (int i = 0; i < waves[currentWave].numberOfRandomSpawnPoint; i++)
+        for (int i = 0; i < waveData.numberOfRandomSpawnPoint; i++)
         {
             int random;
 
@@ -66,27 +55,28 @@ public class SpawnManager : MonoBehaviour
         }
 
         // Delay start
-        yield return new WaitForSeconds(waves[currentWave].delayStart);
+        yield return new WaitForSeconds(waveData.delayStart);
 
         // Spawn power ups
-        Vector2 offSet2D = Random.insideUnitCircle * powerUpSpawnArea.localScale;
-        Vector3 powerUpSpawnPos = new Vector3();
-
-        for (int i = 0; i < waves[currentWave].numberOfPowerUp; i++)
+        for (int i = 0; i < waveData.numberOfPowerUp; i++)
         {
+            Vector2 randomOffset2D = Random.insideUnitCircle * powerUpSpawnArea.localScale.x * 0.5f;
+            Vector3 powerUpSpawnPos = new Vector3(
+                powerUpSpawnArea.position.x + randomOffset2D.x,
+                powerUpSpawnArea.position.y + 0.5f,
+                powerUpSpawnArea.position.z + randomOffset2D.y);
+
             int random = Random.Range(0, powerUps.Length);
             Instantiate(powerUps[random], powerUpSpawnPos, Quaternion.identity);
         }
 
         // Spawn enemies using selected spawn points
-        for (int i = 0; i < waves[currentWave].totalSpawnEnemies; i++)
+        for (int i = 0; i < waveData.totalSpawnEnemies; i++)
         {
             int random = Random.Range(0, selectedPoints.Count);
             Instantiate(enemyPrefab, spawnPoints[random].position, Quaternion.identity);
 
-            yield return new WaitForSeconds(waves[currentWave].spawnInterval);
+            yield return new WaitForSeconds(waveData.spawnInterval);
         }
-
-
     }
 }

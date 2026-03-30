@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: -2327077869768662680}
   m_Layer: 0
   m_Name: StunPowerUp
-  m_TagString: PowerUp
+  m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -125,3 +125,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e34910cfa2ae7b04e8945c4860534251, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StunPowerUp
+  coolDownTime: 5
