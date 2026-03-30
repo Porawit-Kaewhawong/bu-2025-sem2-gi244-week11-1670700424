@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     public float speed = 5f;
     public Transform focalPoint;
     public bool hasPowerUp;
+    public GameObject powerUpIndicator;
+    private GameObject runTimePowerUp;
 
     private Rigidbody rb;
 
@@ -40,12 +42,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        if (runTimePowerUp != null)
+        {
+            runTimePowerUp.transform.position = transform.position;
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("PowerUp"))
         {
             hasPowerUp = true;
             Destroy(other.gameObject);
+
+            runTimePowerUp = Instantiate(powerUpIndicator);
+            
             if (powerUpRoutine != null)
             {
                 StopCoroutine(powerUpRoutine);
@@ -57,6 +70,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator PowerUpCooldown()
     {
         yield return new WaitForSeconds(10f);
+        Destroy(runTimePowerUp);
         hasPowerUp = false;
     }
 
